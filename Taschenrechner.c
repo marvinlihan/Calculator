@@ -38,48 +38,52 @@ const char* skip_whitespace(const char* expr) {
 // Function to convert substring into an integer
 int parse_term(const char** expr) {
     int value = 0;
-    const char* e = skip_whitespace(*expr);
+    //const char* e = skip_whitespace(*expr);
+    const char* e = *expr;
     
     if (isdigit(*e)) {
         value = strtol(e, (char**)&e, 10);  // Convert string into integer and store in value
     }
     
-    // Operation of multiplication and division
-    while (*e == '*' || *e == '/') {
-        char op = *e++;
-        e = skip_whitespace(e);
-        int nextValue = strtol(e, (char**)&e, 10);  // Convert next substring to integer
-        
-        if (op == '*') {
-            value *= nextValue;
-        } else if (op == '/') {
-            value /= nextValue;
+    // Process multiplication and division
+    while (1) {
+        e = skip_whitespace(e);  // Skip whitespace after number
+        if (*e == '*' || *e == '/') {
+            char op = *e++;
+            e = skip_whitespace(e);  // Skip whitespace after operator
+            int nextValue = strtol(e, (char**)&e, 10);  // Convert next number to integer
+            
+            if (op == '*') {
+                value *= nextValue;
+            } else if (op == '/') {
+                value /= nextValue;
+            }
+        } else {
+            break;  // Exit loop if no "*"" or "/" operator is found
         }
     }
-    
     *expr = e;  // Update the expression pointer to point to the next character
     return value;
 }
 
 // Function to evaluate a mathematical expression
 int evaluate(const char* expression) {
-    const char* expr = skip_whitespace(expression); // Ignore unnecessary whitespace
+    const char* expr = skip_whitespace(expression); // skipp whitespace before the first number
     int result = parse_term(&expr);  // Evaluate first character
     
     // Operation of addition and substraction
     while (*expr != '\0' && *expr != '\n') {
-        expr = skip_whitespace(expr);
-        char op = *expr++;
+        expr = skip_whitespace(expr);   // skipp whitespace before opeation
+        char op = *expr++;  
         
-        expr = skip_whitespace(expr);
+        expr = skip_whitespace(expr);   // skipp whitespace after operation
         int nextValue = parse_term(&expr);  // Evaluation next character
-        
+
         if (op == '+') {
             result += nextValue;
         } else if (op == '-') {
             result -= nextValue;
         }
     }
-    
     return result;
 }
