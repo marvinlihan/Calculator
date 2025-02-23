@@ -4,7 +4,7 @@
 #include <string.h>
 
 // Function prototype
-int evaluate(const char* expression);   
+double evaluate(const char* expression);   
 
 int main() {
     char input[256];    // Size of INput for user
@@ -20,8 +20,8 @@ int main() {
             break;
         }
         
-        int result = evaluate(input);  
-        printf("result: %d\n", result);
+        double result = evaluate(input);  
+        printf("result: %.2f\n", result);       // result has now 2 decimal places
     }
     
     return 0;
@@ -36,13 +36,12 @@ const char* skip_whitespace(const char* expr) {
 }
 
 // Function to convert substring into an integer
-int parse_term(const char** expr) {
-    int value = 0;
-    //const char* e = skip_whitespace(*expr);
+double parse_term(const char** expr) {
+    double value = 0;
     const char* e = *expr;
     
     if (isdigit(*e)) {
-        value = strtol(e, (char**)&e, 10);  // Convert string into integer and store in value
+        value = strtod(e, (char**)&e);  // Convert string into double and store in value
     }
     
     // Process multiplication and division
@@ -51,11 +50,14 @@ int parse_term(const char** expr) {
         if (*e == '*' || *e == '/') {
             char op = *e++;
             e = skip_whitespace(e);  // Skip whitespace after operator
-            int nextValue = strtol(e, (char**)&e, 10);  // Convert next number to integer
+            double nextValue = strtod(e, (char**)&e);  // Convert next number to double
             
             if (op == '*') {
                 value *= nextValue;
             } else if (op == '/') {
+                if(nextValue == 0){
+                    printf("Fehler\n"); // Beheben
+                }
                 value /= nextValue;
             }
         } else {
@@ -67,17 +69,28 @@ int parse_term(const char** expr) {
 }
 
 // Function to evaluate a mathematical expression
-int evaluate(const char* expression) {
+double evaluate(const char* expression) {
     const char* expr = skip_whitespace(expression); // skipp whitespace before the first number
-    int result = parse_term(&expr);  // Evaluate first character
+    double result = parse_term(&expr);  // Evaluate first character
     
     // Operation of addition and substraction
     while (*expr != '\0' && *expr != '\n') {
         expr = skip_whitespace(expr);   // skipp whitespace before opeation
-        char op = *expr++;  
+        char op = *expr++; 
         
         expr = skip_whitespace(expr);   // skipp whitespace after operation
-        int nextValue = parse_term(&expr);  // Evaluation next character
+
+        // Check if after operation comes another operation 
+        if (!isdigit(*expr++)){
+            *expr--;
+            if(*expr++ != '+') {
+            printf("Error: one '%c' operation to much.\n", expr[*expr]);    // Rückgabe Zeichen falsch !!!
+            return 0;  
+            }
+        }
+        *expr--;    // decrease array position because of "isdigit(*expr++)"
+
+        double nextValue = parse_term(&expr);  // Evaluation next character
 
         if (op == '+') {
             result += nextValue;
