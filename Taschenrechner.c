@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <string.h>
+#include <math.h>
 
 // Function prototype
 double evaluate(const char* expression);   
@@ -20,8 +21,13 @@ int main() {
             break;
         }
         
-        double result = evaluate(input);  
-        printf("result: %.2f\n", result);       // result has now 2 decimal places
+        double result = evaluate(input); 
+        if(isinf(result)){                          // Checks if the result is infinity, which should only appear if the user divides by 0
+            printf("Dividing by zero is not permitted\n");
+        }
+        else{
+            printf("result: %.2f\n", result);       // result has now 2 decimal places
+        }
     }
     
     return 0;
@@ -35,7 +41,7 @@ const char* skip_whitespace(const char* expr) {
     return expr;
 }
 
-// Function to convert substring into an integer
+// Function to convert substring into an double
 double parse_term(const char** expr) {
     double value = 0;
     const char* e = *expr;
@@ -55,9 +61,6 @@ double parse_term(const char** expr) {
             if (op == '*') {
                 value *= nextValue;
             } else if (op == '/') {
-                if(nextValue == 0){
-                    printf("Fehler\n"); // Beheben
-                }
                 value /= nextValue;
             }
         } else {
@@ -81,6 +84,7 @@ double evaluate(const char* expression) {
         expr = skip_whitespace(expr);   // skipp whitespace after operation
 
         // Check if after operation comes another operation 
+        /*
         if (!isdigit(*expr++)){
             *expr--;
             if(*expr++ != '+') {
@@ -89,6 +93,7 @@ double evaluate(const char* expression) {
             }
         }
         *expr--;    // decrease array position because of "isdigit(*expr++)"
+        */
 
         double nextValue = parse_term(&expr);  // Evaluation next character
 
