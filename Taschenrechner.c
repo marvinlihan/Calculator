@@ -43,12 +43,24 @@ int main() {
 double parse_term(const char** expr) {
     double value = 0;
     const char* e = *expr;
+
+    int sign = 1;               // positive sign
+    // check sign before the first number
+    while (*e == '+' || *e == '-') {
+        if (*e == '-') {
+            sign = -sign;       // switch sign if '-' detected     
+        }
+        e++;
+    }
+
+
     if(*e == '*' || *e == '/'){
         printf("Error: one '%c' operation too much. Your result is not correct!\n", *e);
     }
     
     if (isdigit(*e)) {
         value = strtod(e, (char**)&e);  // Convert string into double and store in value
+        value *= sign;                  // add sign to the value
     }
     
     // Process multiplication and division
@@ -69,7 +81,17 @@ double parse_term(const char** expr) {
             check++;  
             }
 
+            int nextSign = 1;           // check sign from nextvalue
+            while (*e == '+' || *e == '-') {  
+                if (*e == '-'){
+                     nextSign = -nextSign;
+                }
+                e++;
+            }
+
+
             double nextValue = strtod(e, (char**)&e);  // Convert next number to double
+            nextValue *= nextSign;                     // add sign to "next"value 
 
             if (op == '*') {
                 value *= nextValue;
@@ -96,19 +118,18 @@ double evaluate(const char* expression) {
         
         expr = skip_whitespace(expr);   // skipp whitespace after operation
 
-        // Check if after operation comes another operation 
-        /*
-        if (!isdigit(*expr++)){
-            *expr--;
-            if(*expr++ != '+') {
-            printf("Error: one '%c' operation to much.\n", expr[*expr]);    // Rückgabe Zeichen falsch !!!
-            return 0;  
+        int sign = 1;                   // check sign           
+        while (*expr == '+' || *expr == '-') {  
+            if (*expr == '-'){
+                sign = -sign;
             }
+            expr++;
         }
-        *expr--;    // decrease array position because of "isdigit(*expr++)"
-        */
+
 
         double nextValue = parse_term(&expr);  // Evaluation next character
+        nextValue *= sign;                     // add sign 
+
 
         if (op == '+') {
             result += nextValue;
