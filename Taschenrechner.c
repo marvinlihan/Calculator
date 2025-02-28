@@ -5,7 +5,9 @@
 #include <math.h>
 
 // Function prototype
-double evaluate(const char* expression);   
+double evaluate(const char* expression); 
+int is_valid_expression(const char *input);
+const char* skip_whitespace(const char* expr);
 
 int main() {
     char input[256];    // Size of INput for user
@@ -21,6 +23,10 @@ int main() {
             break;
         }
         
+        if (!is_valid_expression(input)) {      // checks if user types valid input
+            continue;
+        }
+        
         double result = evaluate(input); 
         if(isinf(result)){                          // Checks if the result is infinity, which should only appear if the user divides by 0
             printf("Dividing by zero is not permitted\n");
@@ -33,18 +39,13 @@ int main() {
     return 0;
 }
 
-// Function to skip unnecessary whitespaces
-const char* skip_whitespace(const char* expr) {
-    while (*expr == ' ') {
-        expr++;
-    }
-    return expr;
-}
-
 // Function to convert substring into an double
 double parse_term(const char** expr) {
     double value = 0;
     const char* e = *expr;
+    if(*e == '*' || *e == '/'){
+        printf("Error: one '%c' operation too much. Your result is not correct!\n", *e);
+    }
     
     if (isdigit(*e)) {
         value = strtod(e, (char**)&e);  // Convert string into double and store in value
@@ -56,8 +57,20 @@ double parse_term(const char** expr) {
         if (*e == '*' || *e == '/') {
             char op = *e++;
             e = skip_whitespace(e);  // Skip whitespace after operator
+
+            const char* check = e;
+
+            // checks if two '*' or '/' character are between two numbers
+            while (!isdigit(*check) && *check != '\0') {  
+                if (*check == '*' || *check == '/') {  
+                    printf("Error: one '%c' operation too much. Your result is not correct!\n", *check);
+                    break;
+                }
+            check++;  
+            }
+
             double nextValue = strtod(e, (char**)&e);  // Convert next number to double
-            
+
             if (op == '*') {
                 value *= nextValue;
             } else if (op == '/') {
@@ -104,4 +117,26 @@ double evaluate(const char* expression) {
         }
     }
     return result;
+}
+
+
+
+// Function to skip unnecessary whitespaces
+const char* skip_whitespace(const char* expr) {
+    while (*expr == ' ') {
+        expr++;
+    }
+    return expr;
+}
+
+// Function to check if expression is valid
+int is_valid_expression(const char *input) {
+    while (*input) {
+        if (!(isdigit(*input) || *input == '+' || *input == '-' || *input == '*' || *input == '/' || *input == ' ' || *input == '\n')) {    // all valid characters
+            printf("Error: '%c' is not valid character!\n", *input);
+            return 0; 
+        }
+        input++;
+    }
+    return 1;
 }
